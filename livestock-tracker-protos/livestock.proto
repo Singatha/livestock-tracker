@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package livestock;
+
+service LivestockService {
+  rpc GetLivestockByID (GetLivestockByIDRequest) returns (GetLivestockByIDResponse);
+  rpc AddLivestock (AddLivestockRequest) returns (AddLivestockResponse);
+  rpc EditLivestock (EditLivestockRequest) returns (EditLivestockResponse);
+  rpc RemoveLivestock (RemoveLivestockRequest) returns (RemoveLivestockResponse);
+
+  rpc GetLivestock (GetLivestockRequest) returns (GetLivestockResponse);
+
+}
+
+message GetLivestockByIDRequest {
+  int32 livestock_id = 1;
+}
+
+message GetLivestockByIDResponse {
+  int32 livestock_id = 1;
+  int32 user_id = 2;
+  string livestock_type = 3;
+  string health_status = 4;
+  string group_name = 5;
+  int32 age = 6;
+  int32 expected_growth = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message AddLivestockRequest {
+  int32 user_id = 1;
+  string livestock_type = 2;
+  string health_status = 3;
+  string group_name = 4;
+  int32 age = 5;
+  int32 expected_growth = 6;
+}
+
+message AddLivestockResponse {
+  string message = 1;
+}
+
+message EditLivestockRequest {
+  int32 user_id = 1;
+  string livestock_type = 2;
+  string health_status = 3;
+  string group_name = 4;
+  int32 age = 5;
+  int32 expected_growth = 6;
+}
+
+message EditLivestockResponse {
+  string message = 1;
+}
+
+message RemoveLivestockRequest {
+  int32 livestock_id = 1;
+  int32 used_id = 2;
+}
+
+message RemoveLivestockResponse {
+  string message = 1;
+}
+
+message Livestock {
+  int32 livestock_id = 1;
+  int32 user_id = 2;
+  string livestock_type = 3;
+  string health_status = 4;
+  string group_name = 5;
+  int32 age = 6;
+  int32 expected_growth = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message GetLivestockRequest {
+}
+
+message GetLivestockResponse {
+  repeated Livestock livestock = 1;
+}

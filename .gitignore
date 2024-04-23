@@ -124,6 +124,8 @@ celerybeat.pid
 .venv
 env/
 venv/
+livestock-tracker-api-gateway/venv/
+livestock-tracker-service/venv/
 ENV/
 env.bak/
 venv.bak/

@@ -1,0 +1,88 @@
+version: '2.1'
+services:
+  livestock-tracker-message-broker:
+    image: rabbitmq:3-management
+    container_name: livestock-tracker-rabbit-mq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - livestock-tracker-net
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+  psql-livestock-tracker-service-db:
+    image: postgres
+    container_name: psql-livestock-tracker-service
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: livestockTrackerDB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - psql-livestock-tracker-service-data:/var/lib/postgresql/data
+
+    # admin:
+    #   image: admin
+    #   restart: always
+    #   ports:
+    #     - 8080:8080
+    networks:
+      - livestock-tracker-net
+  livestock-tracker-auth-service:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: livestock-tracker-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - '8080:8080'
+    command:
+      ["start-dev"]
+    networks:
+      - livestock-tracker-net
+  livestock-tracker-protobufs:
+    image: livestock-tracker-dynamic-protos
+    build: ./livestock-tracker-protos
+  livestock-tracker-service-backend:
+    image: livestock-tracker-service-backend
+    container_name: livestock-tracker-service
+    restart: always
+    build: ./livestock-tracker-service
+    ports:
+      - '50053:50053'
+    depends_on:
+      psql-livestock-tracker-service-db:
+        condition: service_healthy
+    networks:
+      - livestock-tracker-net
+  livestock-tracker-api-gateway:
+    image: livestock-tracker-api
+    container_name: livestock-tracker-api-gateway
+    restart: always
+    build: ./livestock-tracker-api-gateway
+    ports:
+      - '3080:3080'
+    depends_on:
+      - livestock-tracker-service-backend
+    networks:
+      - livestock-tracker-net
+  livestock-tracker-email-service-backend:
+    image: livestock-tracker-email-service-backend
+    container_name: livestock-tracker-email-service
+    restart: always
+    build: ./livestock-tracker-email-service
+    depends_on:
+      - livestock-tracker-message-broker
+    networks:
+      - livestock-tracker-net
+
+networks:
+  livestock-tracker-net:
+
+volumes:
+  psql-livestock-tracker-service-data:
