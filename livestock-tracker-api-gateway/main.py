@@ -7,6 +7,7 @@ from controllers import livestock_tracker
 app = FastAPI()
 
 class Livestock(BaseModel):
+    user_id: int
     livestock_type: str
     health_status: str
     group_name: str
@@ -19,4 +20,5 @@ def read_root():
 
 @app.post("/api/livestock/add")
 def add_livestock(livestock: Livestock):
-    return livestock_tracker.add_livestock(livestock.livestock_type, livestock.health_status, livestock.group_name, livestock.age, livestock.expected_growth)
+    response = livestock_tracker.add_livestock(livestock.user_id, livestock.livestock_type, livestock.health_status, livestock.group_name, livestock.age, livestock.expected_growth)
+    return { "message" : f"{response.message}" }

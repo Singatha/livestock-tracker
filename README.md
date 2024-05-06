@@ -2,7 +2,6 @@
 
 A system for tracking and monitoring livestock.
 
-
 ## Run Locally
 
 Clone the project
@@ -10,7 +9,6 @@ Clone the project
 ```bash
   git clone https://github.com/Singatha/livestock-tracker.git
 ```
-
 
 To run the project, go to the project folder
 
@@ -21,6 +19,12 @@ and run
 
 ```bash
   docker-compose up --build
+```
+
+for linux prefix with sudo
+
+```bash
+  sudo docker-compose up --build
 ```
 
 To compose down run
@@ -40,6 +44,7 @@ To compose down run, remove images and volumes
 ```bash
   docker-compose down -v --rmi all
 ```
+
 ## Authors
 
 - [@singatha](https://www.github.com/singatha)
@@ -52,26 +57,71 @@ To compose down run, remove images and volumes
 - Caching
 - Security
 
-frontend
-   |
-   |
-api gateway -- ml-service
-| | | |
-| | | rabbitmq (email service)
-| | keycloak (auth)
-| livestock tracker service
+## Installation
 
-livestock_id
-user_id
-group_name
-livestock_type
-health_status
-age
-expected_growth
-created_at
-updated_at
+To install dependencies
 
-python -m grpc_tools.protoc -I../../protos --python_out=. --pyi_out=. --grpc_python_out=. ../../protos/route_guide.proto
-protoc -I=$SRC_DIR --python_out=$DST_DIR $SRC_DIR/addressbook.proto
+```bash
+  cd livestock-tracker-service
+```
 
-python3 -m grpc_tools.protoc -I=../livestock-tracker-protos --python_out=../livestock-tracker-protos/ --grpc_python_out=../livestock-tracker-protos ../livestock-tracker-protos/livestock.proto
+create a virtual environment, if you don't have one setup
+
+```bash
+  python3 -m venv venv
+```
+
+and then activate the virtual environment
+
+```bash
+  source venv/bin/activate
+```
+
+install the dependencies
+
+```bash
+  pip install -r requirements.txt
+```
+
+You can deactivate the virtual environment by running this 
+
+```bash
+  deactivate
+```
+
+## Adding a new dependency
+
+Activate virtual environment, if has been activated, then install package
+
+```bash
+  pip install <package-name>
+```
+
+update the requirements file
+
+```bash
+  pip freeze > requirements.txt
+```
+
+## Compiling Protobufs
+
+after creating the proto files, you can compile them by running this command
+
+```bash
+  python3 -m grpc_tools.protoc -I=../livestock-tracker-protos --python_out=../livestock-tracker-protos/ --grpc_python_out=../livestock-tracker-protos ../livestock-tracker-protos/livestock.proto
+```
+
+change the import statement on 
+```bash
+  *_grpc.py
+```
+file, from
+
+```bash
+    import livestock_pb2 as livestock__pb2
+```
+to
+
+```bash
+    from . import livestock_pb2 as livestock__pb2
+```

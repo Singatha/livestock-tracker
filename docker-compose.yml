@@ -11,6 +11,9 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+    hostname: livestock-tracker-message-broker
+    depends_on:
+      - psql-livestock-tracker-service-db
   psql-livestock-tracker-service-db:
     image: postgres
     container_name: psql-livestock-tracker-service
@@ -18,6 +21,8 @@ services:
     environment:
       POSTGRES_PASSWORD: example
       POSTGRES_DB: livestockTrackerDB
+    ports:
+        - '5433:5432'
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 1s
@@ -25,12 +30,24 @@ services:
       retries: 10
     volumes:
       - psql-livestock-tracker-service-data:/var/lib/postgresql/data
-
-    # admin:
-    #   image: admin
-    #   restart: always
-    #   ports:
-    #     - 8080:8080
+    networks:
+      - livestock-tracker-net
+  psql-livestock-tracker-auth-service-db:
+    image: postgres
+    container_name: psql-livestock-tracker-auth-service
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: keycloak
+    ports:
+        - '5432:5432'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - psql-livestock-tracker-auth-service-data:/var/lib/postgresql/data
     networks:
       - livestock-tracker-net
   livestock-tracker-auth-service:
@@ -39,8 +56,16 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://psql-livestock-tracker-auth-service-db:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: example
+      KC_HOSTNAME: localhost
     ports:
       - '8080:8080'
+    depends_on:
+      psql-livestock-tracker-auth-service-db:
+        condition: service_healthy
     command:
       ["start-dev"]
     networks:
@@ -54,7 +79,7 @@ services:
     restart: always
     build: ./livestock-tracker-service
     ports:
-      - '50053:50053'
+      - '50051:50051'
     depends_on:
       psql-livestock-tracker-service-db:
         condition: service_healthy
@@ -66,9 +91,10 @@ services:
     restart: always
     build: ./livestock-tracker-api-gateway
     ports:
-      - '3080:3080'
+      - '8000:8000'
     depends_on:
       - livestock-tracker-service-backend
+      - livestock-tracker-auth-service
     networks:
       - livestock-tracker-net
   livestock-tracker-email-service-backend:
@@ -86,3 +112,4 @@ networks:
 
 volumes:
   psql-livestock-tracker-service-data:
+  psql-livestock-tracker-auth-service-data:
