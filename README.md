@@ -107,6 +107,8 @@ docker compose exec web npm run build
 
 Backend tests cover permissions, farm isolation, validation, and API workflows. New domain behavior should include focused `test_*.py` coverage.
 
+GitHub Actions runs these checks for pull requests and `main`, validates both production Compose profiles, and builds the production images. Semantic-version tags publish multi-architecture API and web images to GitHub Container Registry. See [Continuous Integration and Releases](docs/ci-cd.md).
+
 ## PWA Preview
 
 Service workers are disabled during development to prevent stale caches. Test the production PWA locally with:
@@ -127,7 +129,7 @@ For public cloud deployment with managed PostgreSQL, Redis, private object stora
 
 ## Roadmap
 
-- Production deployment, CI/CD, backups, monitoring, and transactional email
+- Monitoring, transactional email delivery, and routine restore exercises
 - Optional OAuth providers
 - Location tracking when compatible livestock tags are available
 - Native mobile applications if PWA usage demonstrates a clear need

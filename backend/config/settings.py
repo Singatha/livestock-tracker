@@ -102,9 +102,7 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
-    },
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 if os.getenv("DJANGO_STORAGE_BACKEND", "local") == "s3":
     STORAGES["default"] = {
@@ -133,9 +131,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = (*default_headers, "x-farm-id")
 CSRF_TRUSTED_ORIGINS = [
     value
-    for value in os.getenv(
-        "DJANGO_CSRF_TRUSTED_ORIGINS", ",".join(CORS_ALLOWED_ORIGINS)
-    ).split(",")
+    for value in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", ",".join(CORS_ALLOWED_ORIGINS)).split(",")
     if value
 ]
 

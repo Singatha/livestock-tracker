@@ -35,7 +35,9 @@ Use a minimum of 4 GB RAM for the default container limits and operating-system 
 
 ## Build and Publish Images
 
-Choose an immutable release tag such as a Git commit SHA:
+The normal release path is a semantic-version tag. Pushing a tag such as `v0.1.0` runs the full CI workflow and publishes multi-architecture `flockwise-api` and `flockwise-web` images to GHCR with SBOM and provenance metadata. See [Continuous Integration and Releases](ci-cd.md).
+
+For a manual build, choose an immutable release tag such as a Git commit SHA:
 
 ```bash
 export REGISTRY=ghcr.io/your-account
