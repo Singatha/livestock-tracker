@@ -9,9 +9,10 @@ Flockwise uses GitHub Actions to keep the main branch deployable and to publish 
 - lints, format-checks, and tests Django against PostgreSQL 17 and Redis 8;
 - installs the frontend with `npm ci`, type-checks it, rejects high or critical production dependency advisories, and creates a Nuxt production build;
 - validates the private and cloud Compose files plus production shell scripts;
+- performs an isolated database and attachment backup/restore rehearsal;
 - builds the API and web production Docker targets without publishing them.
 
-Protect `main` in GitHub and require the `Backend checks`, `Frontend checks`, `Validate deployment configuration`, `Build API image`, and `Build web image` checks before merging. Workflows use read-only repository permissions unless publishing packages.
+Protect `main` in GitHub and require the `Backend checks`, `Frontend checks`, `Validate deployment configuration`, `Rehearse backup and restore`, `Build API image`, and `Build web image` checks before merging. Workflows use read-only repository permissions unless publishing packages.
 
 ## Publishing a Release
 

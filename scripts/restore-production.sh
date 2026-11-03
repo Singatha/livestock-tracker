@@ -55,12 +55,22 @@ compose exec -T db sh -c \
     < "$backup_dir/database.dump"
 
 echo "Restoring attachments..."
-cp "$backup_dir/attachments.tar.gz" "$PROJECT_ROOT/backups/restore-attachments.tar.gz"
+archive="restore-attachments-$$.tar.gz"
+staging_archive="$PROJECT_ROOT/backups/$archive"
+cleanup_archive() {
+    rm -f "$staging_archive"
+}
+trap cleanup_archive EXIT INT TERM
+cp "$backup_dir/attachments.tar.gz" "$staging_archive"
 compose --profile tools run --rm -T \
-    -e RESTORE_ARCHIVE=restore-attachments.tar.gz maintenance \
+    -e RESTORE_ARCHIVE="$archive" maintenance \
     sh -c 'find /data -mindepth 1 -delete && tar -xzf "/backups/$RESTORE_ARCHIVE" -C /data'
-rm "$PROJECT_ROOT/backups/restore-attachments.tar.gz"
+rm "$staging_archive"
 
-echo "Starting application services..."
-compose up -d
+if [ "${RESTORE_RESTART_SERVICES:-true}" = "true" ]; then
+    echo "Starting application services..."
+    compose up -d
+else
+    echo "Application restart skipped by RESTORE_RESTART_SERVICES=false."
+fi
 echo "Restore complete."

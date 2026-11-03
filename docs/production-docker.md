@@ -91,6 +91,14 @@ Restore a selected backup:
 
 Restore is destructive and requires typing `RESTORE`. It stops application services, replaces the database and attachments, then restarts the stack.
 
+Rehearse the complete backup and restore process without touching the normal production project:
+
+```bash
+./scripts/rehearse-restore.sh
+```
+
+The rehearsal creates a uniquely named Compose project and temporary backup directory, changes database and attachment markers after backup, restores them, verifies their original values, and removes its containers and volumes. Run it after changing Docker, PostgreSQL, or maintenance scripts and periodically as part of operational checks. CI also runs this rehearsal for every pull request and push to `main`.
+
 ## Upgrade Procedure
 
 1. Create and copy a fresh backup off-host.
