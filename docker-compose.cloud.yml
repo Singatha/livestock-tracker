@@ -1,0 +1,153 @@
+name: flockwise
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-backend-environment: &backend-environment
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Inject DJANGO_SECRET_KEY}
+  DJANGO_DEBUG: "false"
+  DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?Set the public hostname}
+  DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:?Set the HTTPS origin}
+  DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:?Set the HTTPS origin}
+  DJANGO_SECURE_SSL_REDIRECT: "true"
+  DJANGO_SESSION_COOKIE_SECURE: "true"
+  DJANGO_CSRF_COOKIE_SECURE: "true"
+  DJANGO_SECURE_HSTS_SECONDS: ${DJANGO_SECURE_HSTS_SECONDS:-31536000}
+  DJANGO_ATTACHMENT_MAX_SIZE: ${DJANGO_ATTACHMENT_MAX_SIZE:-10485760}
+  POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+  POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Inject POSTGRES_PASSWORD}
+  POSTGRES_HOST: ${POSTGRES_HOST:?Set POSTGRES_HOST}
+  POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+  POSTGRES_SSLMODE: ${POSTGRES_SSLMODE:-require}
+  POSTGRES_CONN_MAX_AGE: ${POSTGRES_CONN_MAX_AGE:-60}
+  CELERY_BROKER_URL: ${CELERY_BROKER_URL:?Inject CELERY_BROKER_URL}
+  CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-${CELERY_BROKER_URL}}
+  DJANGO_STORAGE_BACKEND: s3
+  AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME:?Set AWS_STORAGE_BUCKET_NAME}
+  AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME:-}
+  AWS_S3_ENDPOINT_URL: ${AWS_S3_ENDPOINT_URL:-}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+  AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+  DJANGO_EMAIL_BACKEND: ${DJANGO_EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
+  DJANGO_DEFAULT_FROM_EMAIL: ${DJANGO_DEFAULT_FROM_EMAIL:?Set DJANGO_DEFAULT_FROM_EMAIL}
+  DJANGO_EMAIL_HOST: ${DJANGO_EMAIL_HOST:?Set DJANGO_EMAIL_HOST}
+  DJANGO_EMAIL_PORT: ${DJANGO_EMAIL_PORT:-587}
+  DJANGO_EMAIL_HOST_USER: ${DJANGO_EMAIL_HOST_USER:-}
+  DJANGO_EMAIL_HOST_PASSWORD: ${DJANGO_EMAIL_HOST_PASSWORD:-}
+  DJANGO_EMAIL_USE_TLS: ${DJANGO_EMAIL_USE_TLS:-true}
+  FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:?Set FRONTEND_BASE_URL}
+  RUN_MIGRATIONS: "false"
+
+services:
+  api:
+    image: ${API_IMAGE:?Set API_IMAGE}
+    restart: unless-stopped
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind=0.0.0.0:8000
+      - --workers=3
+      - --threads=2
+      - --timeout=60
+      - --access-logfile=-
+      - --error-logfile=-
+    environment:
+      <<: *backend-environment
+      RUN_MIGRATIONS: "true"
+    expose:
+      - "8000"
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    logging: *default-logging
+    mem_limit: 768m
+
+  worker:
+    image: ${API_IMAGE:?Set API_IMAGE}
+    restart: unless-stopped
+    command: celery -A config worker --loglevel=info --concurrency=${CELERY_WORKER_CONCURRENCY:-2}
+    environment: *backend-environment
+    depends_on:
+      api:
+        condition: service_healthy
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping --destination celery@$${HOSTNAME} --timeout 5 | grep -q pong"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging: *default-logging
+    mem_limit: 512m
+
+  beat:
+    image: ${API_IMAGE:?Set API_IMAGE}
+    restart: unless-stopped
+    command: celery -A config beat --loglevel=info --schedule=/tmp/celerybeat-schedule
+    environment: *backend-environment
+    depends_on:
+      api:
+        condition: service_healthy
+    tmpfs:
+      - /tmp
+    logging: *default-logging
+    mem_limit: 256m
+
+  web:
+    image: ${WEB_IMAGE:?Set WEB_IMAGE}
+    restart: unless-stopped
+    environment:
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-/api/v1}
+      NITRO_HOST: 0.0.0.0
+      NITRO_PORT: 3000
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging: *default-logging
+    mem_limit: 512m
+
+  proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS to the public hostname}
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: *default-logging
+    mem_limit: 256m
+
+volumes:
+  caddy-data:
+  caddy-config:

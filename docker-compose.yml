@@ -90,7 +90,9 @@ services:
       - ./backend:/app
 
   web:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: development
     environment:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:8000/api/v1}
     depends_on:

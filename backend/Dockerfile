@@ -16,4 +16,11 @@ RUN pip install --no-cache-dir -r requirements-dev.txt
 CMD ["/app/entrypoint.sh"]
 
 FROM base AS production
-CMD ["/app/entrypoint.sh"]
+RUN DJANGO_SECRET_KEY=collect-static-build-key python manage.py collectstatic --noinput \
+    && addgroup --system app \
+    && adduser --system --ingroup app app \
+    && mkdir -p /app/media \
+    && chown -R app:app /app
+USER app
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "config.wsgi:application", "--bind=0.0.0.0:8000"]

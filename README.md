@@ -119,6 +119,12 @@ docker compose run --rm --service-ports web npm run preview -- --host=0.0.0.0
 
 Open http://localhost:3000 and use the account menu or browser installation control. Farm API responses and private media are deliberately excluded from offline caching.
 
+## Production Deployment
+
+For a self-contained installation, use the hardened Compose stack with Gunicorn, Nuxt's production server, Caddy, health checks, persistent volumes, and backup tooling. See [Private Production Docker Deployment](docs/production-docker.md).
+
+For public cloud deployment with managed PostgreSQL, Redis, private object storage, immutable registry images, and automatic HTTPS, see [Cloud Production Deployment](docs/cloud-deployment.md).
+
 ## Roadmap
 
 - Production deployment, CI/CD, backups, monitoring, and transactional email
