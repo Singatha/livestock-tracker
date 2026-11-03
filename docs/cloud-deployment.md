@@ -89,7 +89,7 @@ docker compose --env-file .env.cloud -f docker-compose.cloud.yml exec api \
   python manage.py createsuperuser
 ```
 
-Verify `/healthz/`, login, file upload/download, password recovery, a background reminder, and one database write. Confirm the PWA manifest and service worker are served over HTTPS.
+Verify `/livez/`, `/readyz/`, login, file upload/download, password recovery, a background reminder, and one database write. Confirm the PWA manifest and service worker are served over HTTPS.
 
 ## Secrets and Access
 
@@ -131,7 +131,8 @@ For a code-only rollback, restore the previous image references. If a migration 
 
 At minimum, collect container logs and alert on:
 
-- external HTTPS and `/healthz/` failures;
+- external HTTPS and `/livez/` failures;
+- sustained `/readyz/` failures identifying PostgreSQL or Redis unavailability;
 - repeated container restarts or unhealthy status;
 - PostgreSQL storage, connection, and backup failures;
 - Redis connectivity and memory pressure;

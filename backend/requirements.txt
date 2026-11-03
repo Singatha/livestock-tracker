@@ -6,4 +6,5 @@ djangorestframework>=3.16,<4
 drf-spectacular>=0.28,<1
 gunicorn>=23,<24
 psycopg[binary]>=3.2,<4
+sentry-sdk[django]>=2.73,<3
 whitenoise>=6.9,<7

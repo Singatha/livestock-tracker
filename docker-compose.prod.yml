@@ -17,6 +17,13 @@ x-backend-environment: &backend-environment
   DJANGO_CSRF_COOKIE_SECURE: ${DJANGO_CSRF_COOKIE_SECURE:-false}
   DJANGO_SECURE_HSTS_SECONDS: ${DJANGO_SECURE_HSTS_SECONDS:-0}
   DJANGO_ATTACHMENT_MAX_SIZE: ${DJANGO_ATTACHMENT_MAX_SIZE:-10485760}
+  DJANGO_LOG_FORMAT: ${DJANGO_LOG_FORMAT:-json}
+  DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+  SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+  SENTRY_ERROR_SAMPLE_RATE: ${SENTRY_ERROR_SAMPLE_RATE:-1.0}
+  SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.0}
   POSTGRES_DB: ${POSTGRES_DB:-livestock_tracker}
   POSTGRES_USER: ${POSTGRES_USER:-livestock}
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
@@ -77,7 +84,6 @@ services:
       - --workers=3
       - --threads=2
       - --timeout=60
-      - --access-logfile=-
       - --error-logfile=-
     environment:
       <<: *backend-environment
@@ -94,7 +100,7 @@ services:
     tmpfs:
       - /tmp
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz/', timeout=3)"]
       interval: 15s
       timeout: 5s
       retries: 5

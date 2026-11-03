@@ -17,6 +17,14 @@
         reverse_proxy api:8000
     }
 
+    handle /livez/ {
+        reverse_proxy api:8000
+    }
+
+    handle /readyz/ {
+        reverse_proxy api:8000
+    }
+
     handle {
         reverse_proxy web:3000
     }

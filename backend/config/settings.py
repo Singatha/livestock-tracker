@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.observability.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -177,6 +178,57 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 60 * 60,
     }
 }
+
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO").upper()
+LOG_FORMAT = os.getenv("DJANGO_LOG_FORMAT", "console" if DEBUG else "json").lower()
+if LOG_FORMAT not in {"console", "json"}:
+    raise ValueError("DJANGO_LOG_FORMAT must be either 'console' or 'json'.")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {"()": "config.observability.RequestIdFilter"},
+        "suppress_healthcheck_errors": {
+            "()": "config.observability.SuppressHealthcheckErrorsFilter"
+        },
+    },
+    "formatters": {
+        "console": {"format": "%(asctime)s %(levelname)s %(name)s [%(request_id)s] %(message)s"},
+        "json": {"()": "config.observability.JsonFormatter"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "filters": ["request_id", "suppress_healthcheck_errors"],
+            "formatter": LOG_FORMAT,
+        }
+    },
+    "root": {"handlers": ["console"], "level": LOG_LEVEL},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "celery": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "flockwise": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "gunicorn.error": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+    },
+}
+
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), CeleryIntegration()],
+        environment=os.getenv("SENTRY_ENVIRONMENT", "development" if DEBUG else "production"),
+        release=os.getenv("SENTRY_RELEASE") or None,
+        sample_rate=float(os.getenv("SENTRY_ERROR_SAMPLE_RATE", "1.0")),
+        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
+        send_default_pii=False,
+        max_request_body_size="never",
+    )
 
 EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "Flockwise <noreply@localhost>")

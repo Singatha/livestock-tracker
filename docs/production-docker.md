@@ -63,7 +63,11 @@ View health and logs:
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml ps
 docker compose --env-file .env.production -f docker-compose.prod.yml logs -f --tail=200
+curl --fail http://localhost/livez/
+curl --fail http://localhost/readyz/
 ```
+
+Production application logs default to JSON. See [Observability and Health Checks](observability.md) for request correlation, readiness semantics, optional Sentry configuration, and alert guidance.
 
 Stop without deleting data:
 
