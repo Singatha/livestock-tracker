@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import pytest
+from django.core import mail
 from django.utils import timezone
 
 from apps.accounts.models import User
@@ -8,6 +9,7 @@ from apps.farms.models import FarmMembership
 from apps.husbandry.models import HusbandryTask
 from apps.notifications.models import Notification
 from apps.notifications.services import generate_task_reminders
+from apps.notifications.tasks import send_notification_email
 
 pytestmark = pytest.mark.django_db
 
@@ -68,3 +70,24 @@ def test_completing_task_resolves_unread_notifications(api_client, farm):
     )
     assert response.status_code == 200
     assert not Notification.objects.filter(task=task, read_at__isnull=True).exists()
+
+
+def test_task_reminder_email_includes_application_link(farm, user, settings):
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    settings.FRONTEND_BASE_URL = "https://flockwise.example.com"
+    user.email = "owner@example.com"
+    user.save(update_fields=["email"])
+    task = HusbandryTask.objects.create(
+        farm=farm,
+        task_type="vaccination",
+        title="Annual vaccination",
+        due_date=timezone.localdate(),
+    )
+    generate_task_reminders()
+    notification = Notification.objects.get(task=task, recipient=user)
+
+    send_notification_email.run(str(notification.id))
+
+    assert len(mail.outbox) == 1
+    assert "https://flockwise.example.com/tasks" in mail.outbox[0].body
+    assert mail.outbox[0].alternatives[0].mimetype == "text/html"

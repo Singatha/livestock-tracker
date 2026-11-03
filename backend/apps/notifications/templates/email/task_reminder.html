@@ -1,0 +1,8 @@
+{% extends "email/base.html" %}
+{% block content %}
+  <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2">{{ title }}</h1>
+  <p style="margin:0 0 24px;color:#435248;line-height:1.6">{{ message }}</p>
+  <p style="margin:0">
+    <a href="{{ task_url }}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#006b3c;color:#ffffff;font-weight:700;text-decoration:none">Open task</a>
+  </p>
+{% endblock %}

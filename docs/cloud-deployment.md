@@ -91,6 +91,8 @@ docker compose --env-file .env.cloud -f docker-compose.cloud.yml exec api \
 
 Verify `/livez/`, `/readyz/`, login, file upload/download, password recovery, a background reminder, and one database write. Confirm the PWA manifest and service worker are served over HTTPS.
 
+Run `python manage.py send_test_email you@example.com` in the API container before relying on account recovery. See [Transactional Email](email-delivery.md) for provider-neutral SMTP settings, retries, and domain authentication guidance.
+
 ## Secrets and Access
 
 - Never commit `.env.cloud`; restrict it to the deployment user.

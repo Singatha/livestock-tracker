@@ -65,10 +65,10 @@ flowchart TB
 | `nutrition` | Feed inventory and flock feeding plans |
 | `attachments` | Private farm and animal file metadata and storage |
 | `imports` | CSV preview, validation, commit, and error history |
-| `notifications` | Task reminders, unread state, and email delivery |
+| `notifications` | Task reminders, unread state, and reminder email delivery |
 | `reports` / `dashboard` | Cross-module projections and CSV exports |
 | `audit` | Append-only change history for tracked farm records |
-| `common` | Shared UUID and timestamp model base |
+| `common` | Shared UUID/timestamp model base and multipart email renderer |
 
 Modules may reference core farm and animal entities, but should avoid circular business workflows. A new deployment unit is justified only by measured scaling, reliability, security, or ownership needs.
 
@@ -97,6 +97,8 @@ Audit signals capture create, update, and delete operations for tracked farm mod
 ## Background Work and Notifications
 
 Celery Beat schedules reminder generation hourly. The service finds due or overdue husbandry tasks, creates one notification per recipient/task/kind, and queues email delivery only after the database transaction commits. The unique notification constraint makes repeated reminder scans idempotent.
+
+Password resets, farm invitations, and task reminders are delivered by Celery rather than inside HTTP requests. Invitation delivery is queued after its database transaction commits, expired or revoked invitations are skipped, and transient SMTP or network failures use bounded exponential retries. Templates include plain-text and HTML alternatives through a shared renderer while each domain owns its message content.
 
 ## Files, PWA, and External Boundaries
 

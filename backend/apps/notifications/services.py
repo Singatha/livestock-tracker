@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
@@ -54,13 +55,16 @@ def generate_task_reminders(*, today=None) -> int:
 
 
 def deliver_notification_email(notification_id: str) -> None:
-    from django.core.mail import send_mail
+    from apps.common.email import send_templated_email
 
     notification = Notification.objects.select_related("recipient").get(id=notification_id)
-    send_mail(
-        notification.title,
-        notification.message,
-        None,
-        [notification.recipient.email],
-        fail_silently=False,
+    send_templated_email(
+        subject=notification.title,
+        recipient=notification.recipient.email,
+        template_name="task_reminder",
+        context={
+            "title": notification.title,
+            "message": notification.message,
+            "task_url": f"{settings.FRONTEND_BASE_URL}{notification.link}",
+        },
     )

@@ -1,12 +1,11 @@
 from datetime import timedelta
 
-from django.conf import settings
-from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from .models import FarmInvitation, FarmMembership, FarmMembershipAudit
+from .tasks import send_farm_invitation_email
 
 
 def actor_membership(farm, actor):
@@ -51,12 +50,8 @@ def invite_member(*, farm, actor, email, role):
         to_role=role,
         actor=actor,
     )
-    link = f"{settings.FRONTEND_BASE_URL}/invitations/{invitation.token}"
-    send_mail(
-        f"Invitation to {farm.name}",
-        f"You were invited to join {farm.name} as {role}. Accept: {link}",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
+    transaction.on_commit(
+        lambda invitation_id=str(invitation.id): send_farm_invitation_email.delay(invitation_id)
     )
     return invitation
 

@@ -56,6 +56,17 @@ DJANGO_SECURE_HSTS_SECONDS=31536000
 
 Caddy will request and renew certificates when the hostname resolves to the host and ports 80/443 are reachable. For LAN access without public DNS, use an appropriate local certificate or VPN; do not enable secure-cookie settings while serving plain HTTP.
 
+## Transactional Email
+
+The example uses the console backend, which writes messages to container logs. Configure SMTP before relying on password recovery, invitations, or reminder email, then send a test message:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml exec api \
+  python manage.py send_test_email you@example.com
+```
+
+See [Transactional Email](email-delivery.md) for encryption settings, background retry behavior, and domain deliverability requirements.
+
 ## Routine Operations
 
 View health and logs:
@@ -130,6 +141,6 @@ If no irreversible migration or write occurred, check out the previous revision 
 - Use strong, unique Django and PostgreSQL secrets.
 - Do not publish ports 5432, 6379, 8000, or 3000.
 - Keep Docker, base images, and dependencies updated.
-- Configure SMTP only if invitation and password-reset email is needed.
+- Configure and verify SMTP if invitation, reminder, or password-reset email is needed.
 - Review logs and backup results regularly.
 - This setup is single-host; availability depends on that host and its storage.

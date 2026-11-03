@@ -90,7 +90,7 @@ Copy `.env.example` and replace the development defaults. Important settings inc
 | `DJANGO_ATTACHMENT_MAX_SIZE` | Maximum upload size in bytes |
 | `DJANGO_LOG_FORMAT` / `DJANGO_LOG_LEVEL` | Application log structure and severity threshold |
 | `SENTRY_DSN` | Optional Django and Celery error reporting; empty disables it |
-| `DJANGO_EMAIL_*` | SMTP delivery for invitations and password recovery |
+| `DJANGO_EMAIL_*` | SMTP delivery, encryption mode, credentials, and timeout |
 | `FRONTEND_BASE_URL` | Base URL used in emailed links |
 
 The console email backend is suitable for local development; reset and invitation links appear in API or worker logs. Never commit `.env` or production credentials.
@@ -131,9 +131,10 @@ For public cloud deployment with managed PostgreSQL, Redis, private object stora
 
 Health endpoints, request IDs, JSON logs, alert guidance, and optional Sentry configuration are documented in [Observability and Health Checks](docs/observability.md).
 
+Password resets, farm invitations, and task reminders support retrying background delivery through a provider-neutral SMTP configuration. See [Transactional Email](docs/email-delivery.md).
+
 ## Roadmap
 
-- Monitoring, transactional email delivery, and routine restore exercises
 - Optional OAuth providers
 - Location tracking when compatible livestock tags are available
 - Native mobile applications if PWA usage demonstrates a clear need

@@ -1,0 +1,7 @@
+You have been invited to {{ farm_name }}
+
+You were invited to join {{ farm_name }} as {{ role }}.
+Accept the invitation before {{ expires_at|date:"j M Y, H:i T" }}:
+{{ invitation_url }}
+
+If you were not expecting this invitation, you can ignore this email.

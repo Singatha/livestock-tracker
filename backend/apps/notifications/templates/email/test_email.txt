@@ -1,0 +1,3 @@
+Your Flockwise email configuration is working.
+
+This message was sent by the send_test_email management command.
