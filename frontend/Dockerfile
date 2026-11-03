@@ -1,4 +1,4 @@
-FROM node:24-alpine AS dependencies
+FROM node:26-alpine AS dependencies
 
 WORKDIR /app
 COPY package*.json ./
@@ -15,7 +15,7 @@ FROM dependencies AS build
 COPY . .
 RUN npm run build
 
-FROM node:24-alpine AS production
+FROM node:26-alpine AS production
 
 ENV NODE_ENV=production \
     NITRO_HOST=0.0.0.0 \
