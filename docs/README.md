@@ -7,6 +7,7 @@ This directory records the current product and technical design.
 - [Observability](observability.md): health endpoints, request correlation, structured logging, optional error reporting, and alert recommendations.
 - [Transactional email](email-delivery.md): SMTP configuration, background delivery, retries, verification, and deliverability guidance.
 - [Production security](security.md): throttling, proxy trust, upload validation, deployment checks, and incident-response basics.
+- [End-to-end testing](end-to-end-testing.md): isolated Playwright stack, covered journeys, local commands, and failure artifacts.
 - [MVP specification](mvp.md): original first vertical slice. Some deferred capabilities have since been implemented.
 - [ADR 0001](adr/0001-modular-monolith.md): decision to replace the original microservices with a Django and Nuxt modular monolith.
 

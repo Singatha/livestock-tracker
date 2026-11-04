@@ -24,8 +24,10 @@ Run frontend commands from `frontend/`:
 - `npm run dev`: start Nuxt locally.
 - `npm run typecheck`: validate Vue and TypeScript types.
 - `npm run build`: create the production bundle.
+- `npm run test:e2e`: run Playwright against an already running test stack.
 
 Use `docker compose up --build` from the repository root to start the complete stack.
+Use `./scripts/run-e2e.sh` to build an isolated production-like stack, seed it, and run the critical browser journeys.
 
 ## Code and Architecture Standards
 
@@ -35,6 +37,6 @@ Vue components use TypeScript, `<script setup>`, and `PascalCase` filenames. Kee
 
 ## Testing and Contributions
 
-Name Python tests `test_*.py`. Cover permissions, farm isolation, domain constraints, and API outcomes for every workflow. Add Vitest tests for frontend logic and Playwright tests for critical user journeys as those tools are introduced.
+Name Python tests `test_*.py`. Cover permissions, farm isolation, domain constraints, and API outcomes for every workflow. Add Vitest tests for frontend logic and Playwright tests for critical user journeys. Prefer accessible role and label locators over CSS selectors.
 
 Use concise imperative commit subjects. Pull requests should explain behavior changes, list verification commands, identify schema or environment changes, and include screenshots for visible UI updates. Never commit `.env`, virtual environments, database files, `node_modules`, or build output.

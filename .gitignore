@@ -10,3 +10,6 @@ backend/staticfiles/
 frontend/.nuxt/
 frontend/.output/
 frontend/node_modules/
+frontend/playwright-report/
+frontend/test-results/
+frontend/tests/e2e/.auth/

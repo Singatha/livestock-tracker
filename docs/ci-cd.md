@@ -10,9 +10,10 @@ Flockwise uses GitHub Actions to keep the main branch deployable and to publish 
 - installs the frontend with `npm ci`, type-checks it, rejects high or critical production dependency advisories, and creates a Nuxt production build;
 - validates the private and cloud Compose files plus production shell scripts;
 - performs an isolated database and attachment backup/restore rehearsal;
+- runs critical Playwright journeys against production API and web images;
 - builds the API and web production Docker targets without publishing them.
 
-Protect `main` in GitHub and require the `Backend checks`, `Frontend checks`, `Validate deployment configuration`, `Rehearse backup and restore`, `Build API image`, and `Build web image` checks before merging. Workflows use read-only repository permissions unless publishing packages.
+Protect `main` in GitHub and require the `Backend checks`, `Frontend checks`, `Validate deployment configuration`, `Rehearse backup and restore`, `Critical user journeys`, `Build API image`, and `Build web image` checks before merging. Workflows use read-only repository permissions unless publishing packages. Playwright traces, screenshots, videos, and its HTML report are retained for 14 days when produced.
 
 ## Publishing a Release
 

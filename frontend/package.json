@@ -7,6 +7,9 @@
     "dev": "nuxt dev --host 0.0.0.0",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:ui": "playwright test --ui",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
@@ -23,6 +26,7 @@
     "vue-router": "^5.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.0.0",
     "shadcn-nuxt": "^2.8.0",

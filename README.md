@@ -107,9 +107,10 @@ docker compose exec api ruff format --check .
 docker compose exec api pytest -q
 docker compose exec web npm run typecheck
 docker compose exec web npm run build
+./scripts/run-e2e.sh
 ```
 
-Backend tests cover permissions, farm isolation, validation, and API workflows. New domain behavior should include focused `test_*.py` coverage.
+Backend tests cover permissions, farm isolation, validation, and API workflows. Playwright verifies critical browser journeys against an isolated production-like stack. New domain behavior should include focused `test_*.py` coverage; new critical UI journeys should extend the Playwright suite. See [End-to-End Testing](docs/end-to-end-testing.md).
 
 GitHub Actions runs these checks for pull requests and `main`, validates both production Compose profiles, rehearses database and attachment recovery, and builds the production images. Semantic-version tags publish multi-architecture API and web images to GitHub Container Registry. See [Continuous Integration and Releases](docs/ci-cd.md).
 

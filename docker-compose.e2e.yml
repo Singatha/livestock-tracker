@@ -1,0 +1,100 @@
+name: flockwise-e2e
+
+x-backend-environment: &backend-environment
+  DJANGO_SECRET_KEY: e2e-only-secret-key-with-more-than-fifty-random-characters
+  DJANGO_DEBUG: "false"
+  DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,api
+  DJANGO_CORS_ALLOWED_ORIGINS: http://127.0.0.1:3100
+  DJANGO_CSRF_TRUSTED_ORIGINS: http://127.0.0.1:3100
+  DJANGO_SECURE_SSL_REDIRECT: "false"
+  DJANGO_SESSION_COOKIE_SECURE: "false"
+  DJANGO_CSRF_COOKIE_SECURE: "false"
+  DJANGO_SECURE_HSTS_SECONDS: "0"
+  DJANGO_LOG_FORMAT: console
+  DJANGO_LOG_LEVEL: WARNING
+  POSTGRES_DB: livestock_tracker_e2e
+  POSTGRES_USER: livestock_e2e
+  POSTGRES_PASSWORD: livestock-e2e-password
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+  CELERY_BROKER_URL: redis://redis:6379/0
+  DJANGO_CACHE_URL: redis://redis:6379/1
+  DJANGO_NUM_PROXIES: "0"
+  DJANGO_EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+  FRONTEND_BASE_URL: http://127.0.0.1:3100
+  RUN_MIGRATIONS: "false"
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: livestock_tracker_e2e
+      POSTGRES_USER: livestock_e2e
+      POSTGRES_PASSWORD: livestock-e2e-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U livestock_e2e -d livestock_tracker_e2e"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    image: flockwise-e2e-api:local
+    build:
+      context: ./backend
+      target: production
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind=0.0.0.0:8000
+      - --workers=2
+      - --threads=2
+      - --timeout=60
+      - --error-logfile=-
+    environment:
+      <<: *backend-environment
+      RUN_MIGRATIONS: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8100:8000"
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz/', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  web:
+    image: flockwise-e2e-web:local
+    build:
+      context: ./frontend
+      target: production
+    environment:
+      NUXT_PUBLIC_API_BASE: http://127.0.0.1:8100/api/v1
+      NITRO_HOST: 0.0.0.0
+      NITRO_PORT: 3000
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3100:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
