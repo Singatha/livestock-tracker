@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from .models import User
@@ -32,6 +33,8 @@ class CsrfView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
     @extend_schema(request=LoginSerializer, responses=UserSerializer)
     def post(self, request):
@@ -49,6 +52,8 @@ class LoginView(APIView):
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "signup"
 
     @extend_schema(request=SignupSerializer, responses={201: UserSerializer})
     def post(self, request):
@@ -61,6 +66,8 @@ class SignupView(APIView):
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
 
     @extend_schema(request=PasswordResetRequestSerializer, responses={204: None})
     def post(self, request):
@@ -72,6 +79,8 @@ class PasswordResetRequestView(APIView):
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset_confirm"
 
     @extend_schema(request=PasswordResetConfirmSerializer, responses={204: None})
     def post(self, request):

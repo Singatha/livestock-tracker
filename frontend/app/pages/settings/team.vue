@@ -22,7 +22,7 @@ onMounted(load); watch(selectedFarmId, load)
 async function invite() {
   submitting.value = true; errorMessage.value = ''; successMessage.value = ''
   try { await request<FarmInvitation>('/farms/team/invitations/', { method: 'POST', body: form }); form.email = ''; await load(); successMessage.value = 'Invitation queued for delivery.' }
-  catch { errorMessage.value = 'The invitation could not be created. Check the email and role.' }
+  catch (error) { errorMessage.value = isRateLimitError(error) ? 'Too many invitation requests. Wait before trying again.' : 'The invitation could not be created. Check the email and role.' }
   finally { submitting.value = false }
 }
 async function updateMember(member: FarmMembership, changes: Record<string, unknown>) {

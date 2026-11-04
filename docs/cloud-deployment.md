@@ -69,6 +69,8 @@ chmod 600 .env.cloud
 
 Set the public hostname, image references, managed-service endpoints, and secrets. Generate the Django secret with `openssl rand -base64 48`. Prefer a VM/task identity for object storage; use static `AWS_*` credentials only when the provider cannot supply a workload identity.
 
+Use separate logical Redis databases or separate instances for `CELERY_BROKER_URL` and `DJANGO_CACHE_URL`. The cache enforces distributed request limits across API workers. Keep `DJANGO_NUM_PROXIES=1` for the supplied Caddy topology and change it only if another trusted proxy is deliberately added. See [Production Security](security.md).
+
 For AWS S3, `AWS_S3_ENDPOINT_URL` remains empty. For another compatible provider, set its HTTPS endpoint and region. The bucket must remain private; Flockwise reads files through authenticated API endpoints rather than public bucket URLs.
 
 ## First Deployment

@@ -102,6 +102,38 @@ def test_upload_rejects_unsupported_and_oversized_files(api_client, farm, settin
     assert "file" in oversized.data
 
 
+def test_upload_rejects_spoofed_file_content(api_client, farm):
+    spoofed_image = api_client.post(
+        "/api/v1/attachments/",
+        {
+            "category": "photo",
+            "title": "Spoofed image",
+            "file": SimpleUploadedFile(
+                "sheep.jpg", b"%PDF-1.7 fake image", content_type="image/jpeg"
+            ),
+        },
+        format="multipart",
+        **farm_headers(farm),
+    )
+    mismatched_type = api_client.post(
+        "/api/v1/attachments/",
+        {
+            "category": "certificate",
+            "title": "Mismatched document",
+            "file": SimpleUploadedFile(
+                "certificate.pdf", b"%PDF-1.7 valid header", content_type="image/jpeg"
+            ),
+        },
+        format="multipart",
+        **farm_headers(farm),
+    )
+
+    assert spoofed_image.status_code == 400
+    assert "content does not match" in str(spoofed_image.data["file"][0])
+    assert mismatched_type.status_code == 400
+    assert "extension and content type" in str(mismatched_type.data["file"][0])
+
+
 def test_uploader_can_delete_file_and_metadata(api_client, farm, tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path
     uploaded = api_client.post(

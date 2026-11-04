@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "drf_spectacular",
-    "apps.common",
+    "apps.common.apps.CommonConfig",
     "apps.audit.apps.AuditConfig",
     "apps.attachments",
     "apps.accounts",
@@ -124,6 +124,23 @@ ATTACHMENT_MAX_SIZE = int(os.getenv("DJANGO_ATTACHMENT_MAX_SIZE", str(10 * 1024 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 
+CACHE_URL = os.getenv("DJANGO_CACHE_URL")
+if CACHE_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_URL,
+            "TIMEOUT": 300,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "flockwise-local",
+        }
+    }
+
 CORS_ALLOWED_ORIGINS = [
     value
     for value in os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
@@ -162,6 +179,16 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
+    "NUM_PROXIES": int(os.getenv("DJANGO_NUM_PROXIES", "0")),
+    "DEFAULT_THROTTLE_RATES": {
+        "login": os.getenv("DJANGO_THROTTLE_LOGIN_RATE", "10/min"),
+        "signup": os.getenv("DJANGO_THROTTLE_SIGNUP_RATE", "5/hour"),
+        "password_reset": os.getenv("DJANGO_THROTTLE_PASSWORD_RESET_RATE", "5/hour"),
+        "password_reset_confirm": os.getenv(
+            "DJANGO_THROTTLE_PASSWORD_RESET_CONFIRM_RATE", "10/hour"
+        ),
+        "farm_invitations": os.getenv("DJANGO_THROTTLE_FARM_INVITATION_RATE", "20/hour"),
+    },
 }
 
 SPECTACULAR_SETTINGS = {

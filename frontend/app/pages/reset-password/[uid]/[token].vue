@@ -21,8 +21,10 @@ async function submit() {
     await request('/auth/password-reset/confirm/', { method: 'POST', body: { uid: route.params.uid as string, token: route.params.token as string, password: password.value } })
     toast.success('Password updated', 'Sign in with your new password.')
     await navigateTo('/login')
-  } catch {
-    errorMessage.value = 'This reset link is invalid or expired, or the password does not meet the security requirements.'
+  } catch (error) {
+    errorMessage.value = isRateLimitError(error)
+      ? 'Too many reset attempts. Wait before trying again.'
+      : 'This reset link is invalid or expired, or the password does not meet the security requirements.'
   } finally {
     submitting.value = false
   }

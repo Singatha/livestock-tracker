@@ -6,17 +6,7 @@ from rest_framework import serializers
 from apps.animals.models import Animal
 
 from .models import Attachment
-
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".pdf", ".doc", ".docx", ".csv"}
-ALLOWED_CONTENT_TYPES = {
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "text/csv",
-}
+from .validation import validate_attachment_content
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
@@ -59,11 +49,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
         if upload.size > settings.ATTACHMENT_MAX_SIZE:
             maximum = settings.ATTACHMENT_MAX_SIZE // (1024 * 1024)
             raise serializers.ValidationError(f"File must not exceed {maximum} MB")
-        if Path(upload.name).suffix.lower() not in ALLOWED_EXTENSIONS:
-            raise serializers.ValidationError("Unsupported file extension")
-        content_type = (upload.content_type or "").lower()
-        if content_type not in ALLOWED_CONTENT_TYPES:
-            raise serializers.ValidationError("Unsupported file type")
+        validate_attachment_content(upload)
         return upload
 
     def create(self, validated_data):

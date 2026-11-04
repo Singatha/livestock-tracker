@@ -6,6 +6,7 @@ This directory records the current product and technical design.
 - [Database design](database-design.md): entity relationships, ownership, constraints, indexes, deletion behavior, and data integrity rules.
 - [Observability](observability.md): health endpoints, request correlation, structured logging, optional error reporting, and alert recommendations.
 - [Transactional email](email-delivery.md): SMTP configuration, background delivery, retries, verification, and deliverability guidance.
+- [Production security](security.md): throttling, proxy trust, upload validation, deployment checks, and incident-response basics.
 - [MVP specification](mvp.md): original first vertical slice. Some deferred capabilities have since been implemented.
 - [ADR 0001](adr/0001-modular-monolith.md): decision to replace the original microservices with a Django and Nuxt modular monolith.
 

@@ -5,7 +5,7 @@ Flockwise exposes lightweight operational signals without requiring a separate m
 ## Health Endpoints
 
 - `/livez/` returns `200` when the Django process can serve HTTP. It does not contact external services.
-- `/readyz/` returns `200` only when PostgreSQL and Redis respond; otherwise it returns `503` with per-dependency status.
+- `/readyz/` returns `200` only when PostgreSQL, the Celery Redis broker, and the shared throttle cache respond; otherwise it returns `503` with per-dependency status.
 - `/healthz/` remains a backward-compatible alias for readiness.
 
 Docker health checks use `/readyz/`. External uptime monitoring should check `/livez/` to distinguish an unavailable process from a dependency incident, while deployment systems should use `/readyz/` before routing traffic.

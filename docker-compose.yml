@@ -35,8 +35,12 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       CELERY_BROKER_URL: redis://redis:6379/0
+      DJANGO_CACHE_URL: redis://redis:6379/1
+      DJANGO_NUM_PROXIES: ${DJANGO_NUM_PROXIES:-0}
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8000:8000"
@@ -66,6 +70,8 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       CELERY_BROKER_URL: redis://redis:6379/0
+      DJANGO_CACHE_URL: redis://redis:6379/1
+      DJANGO_NUM_PROXIES: ${DJANGO_NUM_PROXIES:-0}
       DJANGO_EMAIL_BACKEND: ${DJANGO_EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
       DJANGO_DEFAULT_FROM_EMAIL: ${DJANGO_DEFAULT_FROM_EMAIL:-Flockwise <noreply@localhost>}
       DJANGO_EMAIL_HOST: ${DJANGO_EMAIL_HOST:-localhost}

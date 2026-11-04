@@ -6,6 +6,13 @@ interface ApiOptions {
   headers?: HeadersInit
 }
 
+export function isRateLimitError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  if ('statusCode' in error && error.statusCode === 429) return true
+  if (!('response' in error) || typeof error.response !== 'object' || error.response === null) return false
+  return 'status' in error.response && error.response.status === 429
+}
+
 export function useApi() {
   const config = useRuntimeConfig()
   const selectedFarmId = useCookie<string | null>('selected-farm-id', {

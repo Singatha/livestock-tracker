@@ -80,6 +80,8 @@ curl --fail http://localhost/readyz/
 
 Production application logs default to JSON. See [Observability and Health Checks](observability.md) for request correlation, readiness semantics, optional Sentry configuration, and alert guidance.
 
+Authentication and invitation throttles use Redis database 1 by default, separate from Celery's database 0. Keep `DJANGO_NUM_PROXIES=1` for the supplied Caddy topology. Review [Production Security](security.md) before making the service reachable beyond a trusted network.
+
 Stop without deleting data:
 
 ```bash
@@ -141,6 +143,7 @@ If no irreversible migration or write occurred, check out the previous revision 
 - Use strong, unique Django and PostgreSQL secrets.
 - Do not publish ports 5432, 6379, 8000, or 3000.
 - Keep Docker, base images, and dependencies updated.
+- Keep the Redis-backed throttle cache private and use the exact trusted-proxy count.
 - Configure and verify SMTP if invitation, reminder, or password-reset email is needed.
 - Review logs and backup results regularly.
 - This setup is single-host; availability depends on that host and its storage.

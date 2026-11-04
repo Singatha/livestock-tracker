@@ -104,7 +104,7 @@ Password resets, farm invitations, and task reminders are delivered by Celery ra
 
 Attachment metadata is stored in PostgreSQL; file content is stored under Django media storage. Downloads require active farm membership, and production storage can later move behind the same storage interface.
 
-The PWA precaches only the application shell and static assets. API responses and private media are not cached, so livestock data requires a network connection. External boundaries currently comprise SMTP, file storage, and the browser; OAuth, tracking devices, and a knowledge assistant remain deferred integrations.
+The PWA precaches only the application shell and static assets. API responses and private media are not cached, so livestock data requires a network connection. Redis database 0 brokers Celery work in the self-contained deployment, while database 1 stores shared API throttle counters. External boundaries currently comprise SMTP, file storage, Redis, and the browser; OAuth, tracking devices, and a knowledge assistant remain deferred integrations.
 
 ## Evolution Rules
 

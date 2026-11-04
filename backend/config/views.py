@@ -1,6 +1,9 @@
 import logging
+import uuid
+from contextlib import suppress
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 from redis import Redis
@@ -45,6 +48,26 @@ def readiness(request):
     finally:
         if redis_client is not None:
             redis_client.close()
+
+    cache_key = f"flockwise:readiness:{uuid.uuid4().hex}"
+    cache_value = "ok"
+    cache_was_written = False
+    try:
+        cache.set(cache_key, cache_value, timeout=5)
+        cache_was_written = True
+        if cache.get(cache_key) != cache_value:
+            raise RuntimeError("cache read-after-write failed")
+        checks["cache"] = "ok"
+    except Exception as exc:
+        checks["cache"] = "unavailable"
+        logger.warning(
+            "readiness.cache_unavailable",
+            extra={"event": "health.cache.unavailable", "error": repr(exc)},
+        )
+    finally:
+        if cache_was_written:
+            with suppress(Exception):
+                cache.delete(cache_key)
 
     ready = all(value == "ok" for value in checks.values())
     return JsonResponse(

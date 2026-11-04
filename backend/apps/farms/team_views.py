@@ -3,6 +3,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.throttling import PostScopedRateThrottle
+
 from .models import FarmInvitation, FarmMembership, FarmMembershipAudit
 from .permissions import selected_farm
 from .team_serializers import (
@@ -47,6 +49,9 @@ class TeamMemberDetailView(APIView):
 
 
 class TeamInvitationsView(APIView):
+    throttle_classes = [PostScopedRateThrottle]
+    throttle_scope = "farm_invitations"
+
     @extend_schema(responses=FarmInvitationSerializer(many=True))
     def get(self, request):
         farm = selected_farm(request)

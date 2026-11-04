@@ -20,8 +20,10 @@ async function submit() {
     resetCsrfToken()
     toast.success('Welcome back', 'You are now signed in.')
     await navigateTo('/')
-  } catch {
-    errorMessage.value = 'Unable to sign in. Check your username and password.'
+  } catch (error) {
+    errorMessage.value = isRateLimitError(error)
+      ? 'Too many sign-in attempts. Wait a moment before trying again.'
+      : 'Unable to sign in. Check your username and password.'
   } finally {
     submitting.value = false
   }

@@ -88,6 +88,8 @@ Copy `.env.example` and replace the development defaults. Important settings inc
 | `DJANGO_CORS_ALLOWED_ORIGINS` | Trusted frontend origins |
 | `NUXT_PUBLIC_API_BASE` | Browser-visible API base URL |
 | `DJANGO_ATTACHMENT_MAX_SIZE` | Maximum upload size in bytes |
+| `DJANGO_CACHE_URL` / `DJANGO_NUM_PROXIES` | Shared throttling cache and trusted reverse-proxy count |
+| `DJANGO_THROTTLE_*` | Scoped authentication and invitation request limits |
 | `DJANGO_LOG_FORMAT` / `DJANGO_LOG_LEVEL` | Application log structure and severity threshold |
 | `SENTRY_DSN` | Optional Django and Celery error reporting; empty disables it |
 | `DJANGO_EMAIL_*` | SMTP delivery, encryption mode, credentials, and timeout |
@@ -146,7 +148,7 @@ Read [AGENTS.md](AGENTS.md) for repository structure, coding standards, testing 
 
 ## Security
 
-Do not report sensitive vulnerabilities through a public issue. Share them privately with the repository owner. This project is still preparing for production deployment and should not be exposed publicly without secure settings, HTTPS, backups, and reviewed infrastructure.
+Do not report sensitive vulnerabilities through a public issue. Share them privately with the repository owner. Review [Production Security](docs/security.md) before exposing the service and retain HTTPS, secure settings, private infrastructure, monitoring, and tested backups.
 
 ## License
 

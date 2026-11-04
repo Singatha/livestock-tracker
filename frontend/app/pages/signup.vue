@@ -17,8 +17,10 @@ async function submit() {
     resetCsrfToken()
     toast.success('Account created', 'Welcome to Flockwise. Create your first farm to get started.')
     await navigateTo('/farms/new')
-  } catch {
-    errorMessage.value = 'We could not create your account. Check that the username and email are unique and the password is strong.'
+  } catch (error) {
+    errorMessage.value = isRateLimitError(error)
+      ? 'Too many account requests. Wait before trying again.'
+      : 'We could not create your account. Check that the username and email are unique and the password is strong.'
   } finally {
     submitting.value = false
   }
